@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using UnityEngine.Networking;
 using Unity.Netcode.Transports.UNET;
+using PlayFab;
+using PlayFab.MultiplayerAgent;
 
 public class NetworkSettings : UNetTransport
 {
@@ -10,6 +12,7 @@ public class NetworkSettings : UNetTransport
     {
         NetworkTransport.Init();
         InitializeNetwork();
+        
     }
 
 

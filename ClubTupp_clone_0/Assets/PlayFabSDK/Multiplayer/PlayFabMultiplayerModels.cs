@@ -3288,7 +3288,7 @@ namespace PlayFab.MultiplayerModels
         /// The preferred regions to request a multiplayer server from. The Multiplayer Service will iterate through the regions in
         /// the specified order and allocate a server from the first one that has servers available.
         /// </summary>
-        public List<string> PreferredRegions;
+        public List<AzureRegion> PreferredRegions;
         /// <summary>
         /// Data encoded as a string that is passed to the game server when requested. This can be used to to communicate
         /// information such as game mode or map through the request flow.
