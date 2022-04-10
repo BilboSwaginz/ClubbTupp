@@ -101,3 +101,4 @@ Received Import Request.
 Start importing Assets/Thaleah_PixelFont/Materials/Thaleah_DemoBackground.png using Guid(b324a4685d480b346b084e8a5dbacbde) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '99fb81f662a34d438dcb2bbafd74933d') in 0.028493 seconds
   Import took 0.042227 seconds .
 
+AssetImportWorkerClient::OnTransportError - code=2 error=End of file
