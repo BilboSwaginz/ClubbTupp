@@ -14,11 +14,8 @@ public class ClothesShop : MonoBehaviour
 {
     public PlayerData playerData;
     [SerializeField] private GameObject clothesShopUI;
+    [SerializeField] private GameObject clothesShopButton;
 
-    private void Start()
-    {
-        
-    }
 
     public void BuyClothes(Clothes clothes)
     {
@@ -38,4 +35,15 @@ public class ClothesShop : MonoBehaviour
     {
         clothesShopUI.SetActive(false);
     }
+    
+    public void ActiveClothesShopButton()
+    {
+        clothesShopButton.SetActive(true);
+    }
+
+    public void DeActiveClothesShopButton()
+    {
+        clothesShopButton.SetActive(false);
+    }
+
 }

@@ -71,7 +71,7 @@ public class PlayerMovement : NetworkBehaviour
         if (IsOwner)
         {
             if ((Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(0)) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject() && 
-                !Physics2D.Raycast(transform.position, mainCamera.ScreenToWorldPoint(Input.mousePosition) - transform.position + new Vector3(0, 0, 10), 0.2f, terrain))
+                !Physics2D.Raycast(transform.position, mainCamera.ScreenToWorldPoint(Input.mousePosition) - transform.position + new Vector3(0, 0, 10), 0.3f, terrain))
             {
                 localMouseTarget = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 MouseMoveRequestServerRpc(localMouseTarget);
@@ -138,7 +138,7 @@ public class PlayerMovement : NetworkBehaviour
 
 
     [ServerRpc(RequireOwnership = false)]
-    void MouseMoveRequestServerRpc(Vector3 newTarget)
+    public void MouseMoveRequestServerRpc(Vector3 newTarget)
     {
         mouseTarget.Value = newTarget;
     }

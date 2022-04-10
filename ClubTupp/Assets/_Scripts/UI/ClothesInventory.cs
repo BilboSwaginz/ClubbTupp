@@ -5,28 +5,30 @@ using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditor;
 using UnityEngine.EventSystems;
 using Unity.Netcode;
 using System.Linq;
+using System;
 
 public class ClothesInventory : NetworkBehaviour
 {
+    [Header("Shirts")]
     public Clothes[] clothesListShirt;
     public Clothes[] ownedClothesShirt;
     public GameObject[] clothesDisplayShirt;
 
+    [Header("Pants")]
     public Clothes[] clothesListPants;
     public Clothes[] ownedClothesPants;
     public GameObject[] clothesDisplayPants;
 
+    [Header("Hats")]
     public Clothes[] clothesListHat;
     public Clothes[] ownedClothesHat;
     public GameObject[] clothesDisplayHat;
 
 
-    private Clothes clickedClothes;
-
+    [Header("UI")]
     [SerializeField] private GameObject InventoryUI;
     [SerializeField] private GameObject ClothesUI;
 
@@ -58,9 +60,9 @@ public class ClothesInventory : NetworkBehaviour
 
             UpdateOwnedClothes();
 
-            UpdateClothesDisplayShirt();
-            UpdateClothesDisplayPants();
-            UpdateClothesDisplayHat();
+            UpdateClothesDisplay(ownedClothesShirt, clothesDisplayShirt);
+            UpdateClothesDisplay(ownedClothesPants, clothesDisplayPants);
+            UpdateClothesDisplay(ownedClothesHat, clothesDisplayHat);
 
 
         }
@@ -90,63 +92,54 @@ public class ClothesInventory : NetworkBehaviour
         InventoryUI.SetActive(false);
     }
 
+
+    
     public void OnClickEquipClothes()
     {
-        if (clothesDisplayShirt.Contains(EventSystem.current.currentSelectedGameObject) && Input.GetMouseButtonDown(0))
+        if (ClickOnClothesInInventory(clothesDisplayShirt)) //Check if the player is clickon on a Clothes in the clothes inventory
         {
-            clickedClothes = ownedClothesShirt[ArrayUtility.IndexOf<GameObject>(clothesDisplayShirt, EventSystem.current.currentSelectedGameObject)];
-            UpdateShirtClothesIndexServerRpc(ArrayUtility.IndexOf(clothesListShirt, clickedClothes));
-
+            UpdateClickedClothes(ownedClothesShirt, clothesListShirt, clothesDisplayShirt, UpdateShirtClothesIndexServerRpc);
         }
-        else if (clothesDisplayPants.Contains(EventSystem.current.currentSelectedGameObject) && Input.GetMouseButtonDown(0))
+        else if (ClickOnClothesInInventory(clothesDisplayPants))
         {
-            clickedClothes = ownedClothesPants[ArrayUtility.IndexOf<GameObject>(clothesDisplayPants, EventSystem.current.currentSelectedGameObject)];
-            UpdatePantsClothesIndexServerRpc(ArrayUtility.IndexOf(clothesListPants, clickedClothes));
+            UpdateClickedClothes(ownedClothesPants, clothesListPants, clothesDisplayPants, UpdatePantsClothesIndexServerRpc);
         }
-        else if (clothesDisplayHat.Contains(EventSystem.current.currentSelectedGameObject) && Input.GetMouseButtonDown(0))
+        else if (ClickOnClothesInInventory(clothesDisplayHat))
         {
-            clickedClothes = ownedClothesHat[ArrayUtility.IndexOf<GameObject>(clothesDisplayHat, EventSystem.current.currentSelectedGameObject)];
-            UpdateHatClothesIndexServerRpc(ArrayUtility.IndexOf(clothesListHat, clickedClothes));
+            UpdateClickedClothes(ownedClothesHat, clothesListHat, clothesDisplayHat, UpdateHatClothesIndexServerRpc);
         }
 
     }
 
-    public void UpdateClothesDisplayShirt()
+
+    private void UpdateClickedClothes(Clothes[] ownedClothesList, Clothes[]clothesList, GameObject[] clothesDisplayList, Action<int> UpdateClothesIndexServerRpc)
+    {   
+        //Get the clothes that was clicked
+        var clickedClothes = ownedClothesList[Array.IndexOf(clothesDisplayList, EventSystem.current.currentSelectedGameObject)];
+
+        //Update the players equiped clothes index with the clicked clothes
+        UpdateClothesIndexServerRpc(Array.IndexOf(clothesList, clickedClothes));
+    }
+
+
+    private bool ClickOnClothesInInventory(GameObject[] clothesDisplayList)
+    {   
+        //Is the mouse over an object in the clothesDisplayList (Not some random object) 
+        return clothesDisplayList.Contains(EventSystem.current.currentSelectedGameObject) && Input.GetMouseButtonDown(0);
+    }
+
+
+    public void UpdateClothesDisplay(Clothes[] ownedClothes, GameObject[] clothesDisplay)
     {
-        for (int i = 0; i < ownedClothesShirt.Length; i++)
+        for (int i = 0; i < ownedClothes.Length; i++)
         {
-            if (ownedClothesShirt[i] != null)
+            if (ownedClothes[i] != null)
             {
-                clothesDisplayShirt[i].GetComponent<Image>().sprite = ownedClothesShirt[i].displaySprite;
+                clothesDisplay[i].GetComponent<Image>().sprite = ownedClothes[i].displaySprite;
             }
-
         }
     }
-
-    public void UpdateClothesDisplayPants()
-    {
-        for (int i = 0; i < ownedClothesPants.Length; i++)
-        {
-            if (ownedClothesPants[i] != null)
-            {
-                clothesDisplayPants[i].GetComponent<Image>().sprite = ownedClothesPants[i].displaySprite;
-            }
-
-        }
-    }
-
-
-    public void UpdateClothesDisplayHat()
-    {
-        for (int i = 0; i < ownedClothesHat.Length; i++)
-        {
-            if (ownedClothesHat[i] != null)
-            {
-                clothesDisplayHat[i].GetComponent<Image>().sprite = ownedClothesHat[i].displaySprite;
-            }
-
-        }
-    }
+  
 
 
     public void UpdateOwnedClothes()
@@ -182,15 +175,15 @@ public class ClothesInventory : NetworkBehaviour
                     switch (clothes.type)
                     {
                         case Clothes.Type.Shirt:
-                            ownedClothesShirt[ArrayUtility.IndexOf(clothesListShirt, clothes)] = clothes;
+                            ownedClothesShirt[Array.IndexOf(clothesListShirt, clothes)] = clothes;
                             return;
 
                         case Clothes.Type.Pants:
-                            ownedClothesPants[ArrayUtility.IndexOf(clothesListPants, clothes)] = clothes;
+                            ownedClothesPants[Array.IndexOf(clothesListPants, clothes)] = clothes;
                             return;
 
                         case Clothes.Type.Hat:
-                            ownedClothesHat[ArrayUtility.IndexOf(clothesListHat, clothes)] = clothes;
+                            ownedClothesHat[Array.IndexOf(clothesListHat, clothes)] = clothes;
                             return;
                     }
                 }
@@ -200,9 +193,9 @@ public class ClothesInventory : NetworkBehaviour
         error => {
 
         });
-        UpdateClothesDisplayShirt();
-        UpdateClothesDisplayHat();
-        UpdateClothesDisplayPants();
+        UpdateClothesDisplay(ownedClothesShirt, clothesDisplayShirt);
+        UpdateClothesDisplay(ownedClothesPants, clothesDisplayPants);
+        UpdateClothesDisplay(ownedClothesHat, clothesDisplayHat);
     }
 
 
@@ -245,69 +238,47 @@ public class ClothesInventory : NetworkBehaviour
 
     private void ShirtChange(int oldIndex, int newIndex)
     {
-        if (!IsClient)
-        {
-            return;
-        }
-        shirt.GetComponent<Renderer>().material = clothesListShirt[newIndex].GetComponent<Renderer>().sharedMaterial;
-        shirt.GetComponent<MeshFilter>().mesh = clothesListShirt[newIndex].GetComponent<MeshFilter>().sharedMesh;
-        shirt.localPosition = clothesListShirt[newIndex].transform.localPosition;
-        shirt.localRotation = clothesListShirt[newIndex].transform.localRotation;
-        shirt.localScale = clothesListShirt[newIndex].transform.localScale;
+        ChangeClothes(shirt, clothesListShirt, newIndex);
     }
 
 
     private void PantsChange(int oldIndex, int newIndex)
     {
-        if (!IsClient)
-        {
-            return;
-        }
-        pants.GetComponent<Renderer>().material = clothesListPants[newIndex].GetComponent<Renderer>().sharedMaterial;
-        pants.GetComponent<MeshFilter>().mesh = clothesListPants[newIndex].GetComponent<MeshFilter>().sharedMesh;
-        pants.localPosition = clothesListPants[newIndex].transform.localPosition;
-        pants.localRotation = clothesListPants[newIndex].transform.localRotation;
-        pants.localScale = clothesListPants[newIndex].transform.localScale;
+        ChangeClothes(pants, clothesListPants, newIndex);
     }
 
+    
     private void HatChange(int oldIndex, int newIndex)
     {
-        if (!IsClient)
-        {
-            return;
-        }
-        hat.GetComponent<Renderer>().material = clothesListHat[newIndex].GetComponent<Renderer>().sharedMaterial;
-        hat.GetComponent<MeshFilter>().mesh = clothesListHat[newIndex].GetComponent<MeshFilter>().sharedMesh;
-        hat.localPosition = clothesListHat[newIndex].transform.localPosition;
-        hat.localRotation = clothesListHat[newIndex].transform.localRotation;
-        hat.localScale = clothesListHat[newIndex].transform.localScale;
+        ChangeClothes(hat, clothesListHat, newIndex);
     }
 
+
+    private void ChangeClothes(Transform clothes, Clothes[] clothesList, int newIndex)
+    {
+         if (!IsClient)
+         {
+             return;
+         }
+         clothes.GetComponent<Renderer>().material = clothesList[newIndex].GetComponent<Renderer>().sharedMaterial;
+         clothes.GetComponent<MeshFilter>().mesh = clothesList[newIndex].GetComponent<MeshFilter>().sharedMesh;
+         clothes.localPosition = clothesList[newIndex].transform.localPosition;
+         clothes.localRotation = clothesList[newIndex].transform.localRotation;
+         clothes.localScale = clothesList[newIndex].transform.localScale;
+    }
     private void UpdateClothesStart()
     {
         if (shirtIndex.Value >= 0)
         {
-            shirt.GetComponent<Renderer>().material = clothesListShirt[shirtIndex.Value].GetComponent<Renderer>().sharedMaterial;
-            shirt.GetComponent<MeshFilter>().mesh = clothesListShirt[shirtIndex.Value].GetComponent<MeshFilter>().sharedMesh;
-            shirt.localPosition = clothesListShirt[shirtIndex.Value].transform.localPosition;
-            shirt.localRotation = clothesListShirt[shirtIndex.Value].transform.localRotation;
-            shirt.localScale = clothesListShirt[shirtIndex.Value].transform.localScale;
+            ChangeClothes(shirt, clothesListShirt, shirtIndex.Value);
         }
         if (pantsIndex.Value >= 0)
         {
-            pants.GetComponent<Renderer>().material = clothesListPants[pantsIndex.Value].GetComponent<Renderer>().sharedMaterial;
-            pants.GetComponent<MeshFilter>().mesh = clothesListPants[pantsIndex.Value].GetComponent<MeshFilter>().sharedMesh;
-            pants.localPosition = clothesListPants[pantsIndex.Value].transform.localPosition;
-            pants.localRotation = clothesListPants[pantsIndex.Value].transform.localRotation;
-            pants.localScale = clothesListPants[pantsIndex.Value].transform.localScale;
+            ChangeClothes(pants, clothesListPants, pantsIndex.Value);
         }
         if (hatIndex.Value >= 0)
         {
-            hat.GetComponent<Renderer>().material = clothesListHat[hatIndex.Value].GetComponent<Renderer>().sharedMaterial;
-            hat.GetComponent<MeshFilter>().mesh = clothesListHat[hatIndex.Value].GetComponent<MeshFilter>().sharedMesh;
-            hat.localPosition = clothesListHat[hatIndex.Value].transform.localPosition;
-            hat.localRotation = clothesListHat[hatIndex.Value].transform.localRotation;
-            hat.localScale = clothesListHat[hatIndex.Value].transform.localScale;
+            ChangeClothes(hat, clothesListHat, hatIndex.Value);
         }
     }
 
